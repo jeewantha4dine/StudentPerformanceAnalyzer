@@ -1,0 +1,47 @@
+# Compiled files
+*.o
+*.hi
+*.exe
+analyzer
+Main
+dist/
+dist-newstyle/
+
+# GHC specific
+.ghc.environment.*
+*.prof
+*.aux
+*.hp
+*.eventlog
+.stack-work/
+
+# Cabal
+cabal.project.local
+cabal.project.local~
+.cabal-sandbox/
+cabal.sandbox.config
+*.cabal
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Output files
+output_report.txt
+*.log
+
+# Temporary files
+*.tmp
+temp/
