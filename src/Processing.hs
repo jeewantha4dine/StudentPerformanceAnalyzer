@@ -1,6 +1,8 @@
 module Processing where
+    
 import DataTypes
 
+-- Calculate average marks
 calculateAverage :: [Double] -> Double
 calculateAverage [] = 0.0
 calculateAverage marks = sum marks / fromIntegral (length marks)
