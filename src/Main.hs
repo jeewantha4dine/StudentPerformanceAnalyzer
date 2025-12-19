@@ -47,7 +47,7 @@ main = do
                          then sortByAverageParallel reports
                          else sortByAverage reports
       
-      putStrLn "✓ Processing complete!\n"
+      putStrLn "Processing complete!\n"
       
       -- Interactive menu loop
       menuLoop students reports summary sortedReports
