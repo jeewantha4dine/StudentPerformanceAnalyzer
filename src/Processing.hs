@@ -89,9 +89,7 @@ sortByAverage (pivot:rest) =
   -- ==================================================================
 -- PARALLEL AND CONCURRENT PROCESSING SECTION
 -- ==================================================================
--- This section demonstrates how FP's purity and immutability enable
--- safe concurrent processing without locks or race conditions
--- ==================================================================
+
 
 -- | Process students in PARALLEL using multiple CPU cores
 -- 
