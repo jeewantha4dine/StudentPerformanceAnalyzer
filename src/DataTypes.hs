@@ -1,10 +1,16 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+
 module DataTypes where
+
+import Control.DeepSeq (NFData)
+import GHC.Generics (Generic)
 
 data Student = Student
   { studentId :: Int
   , studentName :: String
   , marks :: [Double]  
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic, NFData)
 
 data Grade 
   = APlus   
@@ -13,17 +19,17 @@ data Grade
   | B       
   | C       
   | F       
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic, NFData)
 
 data Performance = Excellent | Good | Average | Poor
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, NFData)
 
 data StudentReport = StudentReport
   { reportStudent :: Student
   , average :: Double
   , grade :: Grade
   , performance :: Performance
-  } deriving (Show)
+  } deriving (Show, Generic, NFData)
 
 data ClassSummary = ClassSummary
   { totalStudents :: Int
@@ -32,4 +38,4 @@ data ClassSummary = ClassSummary
   , classAverage :: Double
   , highestScore :: Double
   , lowestScore :: Double
-  } deriving (Show)
+  } deriving (Show, Generic, NFData)
