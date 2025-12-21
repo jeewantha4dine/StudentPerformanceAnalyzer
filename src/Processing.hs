@@ -32,7 +32,32 @@ processStudent student =
   let avg = calculateAverage (marks student)
       grd = assignGrade avg
       perf = determinePerformance grd
-  in StudentReport student avg grd perf
+      attRate = attendance student
+      risk = attRate < 75.0 || avg < 50.0
+  in StudentReport student avg grd perf attRate risk
+
+-- Correlation between attendance and marks
+calculateCorrelation :: [StudentReport] -> Double
+calculateCorrelation reports =
+  let n = fromIntegral (length reports)
+      avgs = map average reports
+      atts = map attendanceRate reports
+      meanAvg = sum avgs / n
+      meanAtt = sum atts / n
+      num = sum [(a - meanAvg) * (at - meanAtt) | (a, at) <- zip avgs atts]
+      den = sqrt (sum [(a - meanAvg)^2 | a <- avgs] * sum [(at - meanAtt)^2 | at <- atts])
+  in if den == 0 then 0 else num / den
+
+-- Get at-risk students
+getAtRiskStudents :: [StudentReport] -> [StudentReport]
+getAtRiskStudents = filter isAtRisk
+
+-- Average attendance
+calculateAverageAttendance :: [StudentReport] -> Double
+calculateAverageAttendance reports =
+  let totalAtt = sum (map attendanceRate reports)
+      count = fromIntegral (length reports)
+  in if count == 0 then 0 else totalAtt / count
 
 -- Process list of students
 processAllStudents :: [Student] -> [StudentReport]

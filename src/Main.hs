@@ -92,6 +92,21 @@ menuLoop students reports summary sortedReports = do
       menuLoop students reports summary sortedReports
       
     "7" -> do
+      let correlation = calculateCorrelation reports
+          avgAtt = calculateAverageAttendance reports
+          atRisk = getAtRiskStudents reports
+      putStrLn "\n=== ATTENDANCE VS MARKS ANALYTICS ==="
+      putStrLn $ "Average Class Attendance: " ++ formatDouble avgAtt ++ "%"
+      putStrLn $ "Correlation (Attendance vs marks): " ++ formatDouble correlation
+      putStrLn $ "Students At Risk (Low Attendance or Low Marks): " ++ show (length atRisk)
+      if null atRisk 
+        then putStrLn "No students currently at risk."
+        else do
+          putStrLn "--- List of At-Risk Students ---"
+          mapM_ (putStrLn . formatStudentReport) atRisk
+      menuLoop students reports summary sortedReports
+      
+    "8" -> do
       putStrLn "\nThank you for using Student Analyzer!"
       return ()
       

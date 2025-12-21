@@ -9,7 +9,8 @@ import GHC.Generics (Generic)
 data Student = Student
   { studentId :: Int
   , studentName :: String
-  , marks :: [Double]  
+  , marks :: [Double]
+  , attendance :: Double
   } deriving (Show, Eq, Generic, NFData)
 
 data Grade 
@@ -29,6 +30,8 @@ data StudentReport = StudentReport
   , average :: Double
   , grade :: Grade
   , performance :: Performance
+  , attendanceRate :: Double
+  , isAtRisk :: Bool
   } deriving (Show, Generic, NFData)
 
 data ClassSummary = ClassSummary

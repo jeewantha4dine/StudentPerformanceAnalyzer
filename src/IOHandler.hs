@@ -27,13 +27,16 @@ parseLine line =
   let parts = splitOn ',' line
       trimmedParts = map trim parts
   in case trimmedParts of
-       (idStr:name:markStrs) ->
-         Student
-           { studentId = read idStr :: Int
-           , studentName = name
-           , marks = map (\m -> read m :: Double) markStrs
-           }
-       _ -> Student 0 "Invalid" []
+       (idStr:name:rest) ->
+         let markStrs = init rest
+             attStr = last rest
+         in Student
+            { studentId = read idStr :: Int
+            , studentName = name
+            , marks = map (\m -> read m :: Double) markStrs
+            , attendance = read attStr :: Double
+            }
+       _ -> Student 0 "Invalid" [] 0.0
 
 writeReport :: FilePath -> [StudentReport] -> ClassSummary -> IO ()
 writeReport path reports summary = do
@@ -60,7 +63,8 @@ displayMenu = do
   putStrLn "4. Show Top Performers"
   putStrLn "5. Show Statistics"
   putStrLn "6. Export Report"
-  putStrLn "7. Exit"
+  putStrLn "7. Attendance vs Marks Analytics"
+  putStrLn "8. Exit"
   putStrLn "================================"
   putStr "Enter choice: "
   hFlush stdout
