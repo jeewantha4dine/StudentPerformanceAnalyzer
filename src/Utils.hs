@@ -16,10 +16,13 @@ formatStudentReport report =
   let s = reportStudent report
       avg = average report
       grd = grade report
+      att = attendanceRate report
+      risk = if isAtRisk report then " [AT RISK]" else ""
   in "ID: " ++ show (studentId s) ++
      " | Name: " ++ studentName s ++
-     " | Average: " ++ formatDouble avg ++
-     " | Grade: " ++ gradeToString grd
+     " | Avg: " ++ formatDouble avg ++
+     " | Att: " ++ formatDouble att ++ "%" ++
+     " | Grade: " ++ gradeToString grd ++ risk
 
 formatDouble :: Double -> String
 formatDouble x = show (fromIntegral (round (x * 100)) / 100)

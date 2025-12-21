@@ -1,6 +1,9 @@
 module Processing where
-    
+
 import DataTypes
+
+import Control.Parallel.Strategies (parMap, rdeepseq, using, parList)
+import Control.Parallel (par, pseq)
 
 -- Calculate average marks
 calculateAverage :: [Double] -> Double
@@ -29,7 +32,32 @@ processStudent student =
   let avg = calculateAverage (marks student)
       grd = assignGrade avg
       perf = determinePerformance grd
-  in StudentReport student avg grd perf
+      attRate = attendance student
+      risk = attRate < 75.0 || avg < 50.0
+  in StudentReport student avg grd perf attRate risk
+
+-- Correlation between attendance and marks
+calculateCorrelation :: [StudentReport] -> Double
+calculateCorrelation reports =
+  let n = fromIntegral (length reports)
+      avgs = map average reports
+      atts = map attendanceRate reports
+      meanAvg = sum avgs / n
+      meanAtt = sum atts / n
+      num = sum [(a - meanAvg) * (at - meanAtt) | (a, at) <- zip avgs atts]
+      den = sqrt (sum [(a - meanAvg)^2 | a <- avgs] * sum [(at - meanAtt)^2 | at <- atts])
+  in if den == 0 then 0 else num / den
+
+-- Get at-risk students
+getAtRiskStudents :: [StudentReport] -> [StudentReport]
+getAtRiskStudents = filter isAtRisk
+
+-- Average attendance
+calculateAverageAttendance :: [StudentReport] -> Double
+calculateAverageAttendance reports =
+  let totalAtt = sum (map attendanceRate reports)
+      count = fromIntegral (length reports)
+  in if count == 0 then 0 else totalAtt / count
 
 -- Process list of students
 processAllStudents :: [Student] -> [StudentReport]
@@ -82,3 +110,68 @@ sortByAverage (pivot:rest) =
   let higher = sortByAverage [r | r <- rest, average r >= average pivot]
       lower = sortByAverage [r | r <- rest, average r < average pivot]
   in higher ++ [pivot] ++ lower
+
+  -- ==================================================================
+-- PARALLEL AND CONCURRENT PROCESSING SECTION
+-- ==================================================================
+
+processAllStudentsParallel :: [Student] -> [StudentReport]
+processAllStudentsParallel students = 
+  parMap rdeepseq processStudent students
+
+processAllStudentsSequential :: [Student] -> [StudentReport]
+processAllStudentsSequential = map processStudent
+
+
+calculateClassAverageParallel :: [StudentReport] -> Double
+calculateClassAverageParallel [] = 0.0
+calculateClassAverageParallel reports =
+  let averages = map average reports `using` parList rdeepseq
+      total = sum averages
+      count = fromIntegral (length reports)
+  in total / count
+
+
+getPassingStudentsParallel :: [StudentReport] -> [StudentReport]
+getPassingStudentsParallel reports =
+  filter (\r -> grade r /= F) reports `using` parList rdeepseq
+
+
+sortByAverageParallel :: [StudentReport] -> [StudentReport]
+sortByAverageParallel [] = []
+sortByAverageParallel [x] = [x]
+sortByAverageParallel (pivot:rest) =
+  let lowerPart = sortByAverageParallel [r | r <- rest, average r < average pivot]
+      higherPart = sortByAverageParallel [r | r <- rest, average r >= average pivot]
+  in higherPart `par` (lowerPart `pseq` (higherPart ++ [pivot] ++ lowerPart))
+ 
+processTopNParallel :: Int -> [Student] -> [StudentReport]
+processTopNParallel n students =
+  take n (sortByAverageParallel (processAllStudentsParallel students))
+  
+processStudentsInChunks :: Int -> [Student] -> [StudentReport]
+processStudentsInChunks chunkSize students =
+  let chunks = chunksOf chunkSize students
+      processChunk = map processStudent
+      parallelChunks = parMap rdeepseq processChunk chunks
+  in concat parallelChunks
+
+
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf _ [] = []
+chunksOf n xs = 
+  let (chunk, rest) = splitAt n xs
+  in chunk : chunksOf n rest
+
+
+generateSummaryParallel :: [StudentReport] -> ClassSummary
+generateSummaryParallel reports =
+  let total = length reports
+      passing = length (getPassingStudentsParallel reports)
+      failing = total - passing
+      classAvg = calculateClassAverageParallel reports
+      highest = if null reports then 0.0 else findMaxAverage reports
+      lowest = if null reports then 0.0 else findMinAverage reports
+  in passing `par` failing `par` classAvg `par`
+     ClassSummary total passing failing classAvg highest lowest
+
